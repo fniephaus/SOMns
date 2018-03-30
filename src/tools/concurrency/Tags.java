@@ -1,5 +1,8 @@
 package tools.concurrency;
 
+import com.oracle.truffle.api.instrumentation.Tag;
+
+
 public abstract class Tags {
 
   /** Marks the eventual message send operator. */
@@ -18,7 +21,7 @@ public abstract class Tags {
   }
 
   /** Marks an expression that can be target of a breakpoint. */
-  public final class ExpressionBreakpoint extends Tags {
+  public final class ExpressionBreakpoint extends Tag {
     private ExpressionBreakpoint() {}
   }
 
