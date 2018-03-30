@@ -64,7 +64,7 @@ public class TracingActors {
       }
 
       if (msg.getHaltOnReceive() || ((TracingActor) actor).isStepToNextTurn()) {
-        dbg.prepareSteppingUntilNextRootNode();
+        dbg.prepareSteppingUntilNextRootNode(Thread.currentThread());
         if (((TracingActor) actor).isStepToNextTurn()) { // reset flag
           actor.setStepToNextTurn(false);
         }
@@ -72,7 +72,7 @@ public class TracingActors {
 
       // check if a step-return-from-turn-to-promise-resolution has been triggered
       if (msg.getHaltOnPromiseMessageResolution()) {
-        dbg.prepareSteppingUntilNextRootNode();
+        dbg.prepareSteppingUntilNextRootNode(Thread.currentThread());
       }
     }
   }
