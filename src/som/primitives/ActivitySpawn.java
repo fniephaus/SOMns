@@ -9,6 +9,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -133,20 +134,24 @@ public abstract class ActivitySpawn {
     }
 
     @Specialization(guards = "procMod == ProcessesModule")
-    @TruffleBoundary
-    public final Object spawnProcess(final SImmutableObject procMod,
+    public final Object spawnProcess(final VirtualFrame frame, final SImmutableObject procMod,
         final SClass procCls, @Cached("createIsValue()") final IsValue isVal) {
-      if (!isVal.executeEvaluated(procCls)) {
+      if (!isVal.executeBoolean(frame, procCls)) {
         KernelObj.signalExceptionWithClass("signalNotAValueWith:", procCls);
       }
 
+      spawnProcess(procCls);
+      return Nil.nilObject;
+    }
+
+    @TruffleBoundary
+    private void spawnProcess(final SClass procCls) {
       SSymbol sel = procCls.getMixinDefinition().getPrimaryFactorySelector();
       SInvokable disp = procCls.getMixinDefinition().getFactoryMethods().get(sel);
       SObjectWithClass obj = (SObjectWithClass) disp.invoke(new Object[] {procCls});
 
       processesPool.submit(createProcess(obj, sourceSection,
           onExec.executeShouldHalt()));
-      return Nil.nilObject;
     }
 
     @Override
@@ -210,21 +215,25 @@ public abstract class ActivitySpawn {
     }
 
     @Specialization(guards = "procMod == ProcessesModule")
-    @TruffleBoundary
-    public final Object spawnProcess(final SImmutableObject procMod,
+    public final Object spawnProcess(final VirtualFrame frame, final SImmutableObject procMod,
         final SClass procCls, final SArray arg, final Object[] argArr,
         @Cached("createIsValue()") final IsValue isVal) {
-      if (!isVal.executeEvaluated(procCls)) {
+      if (!isVal.executeBoolean(frame, procCls)) {
         KernelObj.signalExceptionWithClass("signalNotAValueWith:", procCls);
       }
 
+      spawnProcess(procCls, argArr);
+      return Nil.nilObject;
+    }
+
+    @TruffleBoundary
+    private void spawnProcess(final SClass procCls, final Object[] argArr) {
       SSymbol sel = procCls.getMixinDefinition().getPrimaryFactorySelector();
       SInvokable disp = procCls.getMixinDefinition().getFactoryMethods().get(sel);
       SObjectWithClass obj = (SObjectWithClass) disp.invoke(argArr);
 
       processesPool.submit(createProcess(obj, sourceSection,
           onExec.executeShouldHalt()));
-      return Nil.nilObject;
     }
 
     @Override

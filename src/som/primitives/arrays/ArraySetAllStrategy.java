@@ -52,7 +52,7 @@ public final class ArraySetAllStrategy {
     }
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
       Object result = blockDispatch.executeDispatch(new Object[] {block, (long) i + 1});
-      if (!isValue.executeEvaluated(result)) {
+      if (!isValue.executeBoolean(frame, result)) {
         signalNotAValue();
       } else {
         storage[i] = result;

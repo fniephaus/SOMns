@@ -2,6 +2,7 @@ package som.primitives.actors;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
 import som.interpreter.actors.Actor;
@@ -24,8 +25,9 @@ import tools.debugger.entities.ActivityType;
 public abstract class CreateActorPrim extends BinarySystemOperation {
   @Child protected IsValue isValue = IsValueNodeGen.createSubNode();
 
-  @Specialization(guards = "isValue.executeEvaluated(argument)")
-  public final SFarReference createActor(final Object receiver, final Object argument) {
+  @Specialization(guards = "isValue.executeBoolean(frame, argument)")
+  public final SFarReference createActor(final VirtualFrame frame, final Object receiver,
+      final Object argument) {
     Actor actor = Actor.createActor(vm);
     SFarReference ref = new SFarReference(actor, argument);
 
@@ -38,8 +40,9 @@ public abstract class CreateActorPrim extends BinarySystemOperation {
     return ref;
   }
 
-  @Specialization(guards = "!isValue.executeEvaluated(argument)")
-  public final Object throwNotAValueException(final Object receiver, final Object argument) {
+  @Specialization(guards = "!isValue.executeBoolean(frame, argument)")
+  public final Object throwNotAValueException(final VirtualFrame frame, final Object receiver,
+      final Object argument) {
     return KernelObj.signalExceptionWithClass("signalNotAValueWith:", argument);
   }
 
