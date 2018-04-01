@@ -44,10 +44,10 @@ public final class ArraySetAllStrategy {
     return disp.invoke(new Object[] {KernelObj.kernel, Classes.valueArrayClass});
   }
 
-  public static void evalBlockWithArgForRemaining(final SBlock block,
-      final long length, final Object[] storage,
-      final BlockDispatchNode blockDispatch, final Object first, final IsValue isValue) {
-    if (!isValue.executeEvaluated(first)) {
+  public static void evalBlockWithArgForRemaining(final VirtualFrame frame, final SBlock block,
+      final long length, final Object[] storage, final BlockDispatchNode blockDispatch,
+      final Object first, final IsValue isValue) {
+    if (!isValue.executeBoolean(frame, first)) {
       signalNotAValue();
     }
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
@@ -223,9 +223,9 @@ public final class ArraySetAllStrategy {
     }
   }
 
-  public static Object evaluateFirstDetermineStorageAndEvaluateRest(
-      final SBlock blockWithArg, final long length,
-      final BlockDispatchNode blockDispatch, final IsValue isValue) {
+  public static Object evaluateFirstDetermineStorageAndEvaluateRest(final VirtualFrame frame,
+      final SBlock blockWithArg, final long length, final BlockDispatchNode blockDispatch,
+      final IsValue isValue) {
     // TODO: this version does not handle the case that a subsequent value is
     // not of the expected type...
     Object result = blockDispatch.executeDispatch(new Object[] {blockWithArg, (long) 1});
@@ -247,8 +247,8 @@ public final class ArraySetAllStrategy {
       return newStorage;
     } else {
       Object[] newStorage = new Object[(int) length];
-      evalBlockWithArgForRemaining(blockWithArg, length, newStorage, blockDispatch, result,
-          isValue);
+      evalBlockWithArgForRemaining(frame, blockWithArg, length, newStorage, blockDispatch,
+          result, isValue);
       return newStorage;
     }
   }

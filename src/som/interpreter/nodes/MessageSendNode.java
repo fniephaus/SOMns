@@ -7,7 +7,8 @@ import java.util.concurrent.locks.Lock;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.Instrumentable;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.instrumentation.StandardTags.CallTag;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
@@ -18,7 +19,6 @@ import bd.primitives.Specializer;
 import bd.primitives.nodes.PreevaluatedExpression;
 import som.VM;
 import som.compiler.AccessModifier;
-import som.instrumentation.MessageSendNodeWrapper;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
@@ -218,26 +218,23 @@ public final class MessageSendNode {
     }
 
     private PreevaluatedExpression makeEagerPrimUnsyced(final EagerlySpecializableNode prim) {
-      VM.insertInstrumentationWrapper(this);
       assert prim.getSourceSection() != null;
 
       PreevaluatedExpression result =
           (PreevaluatedExpression) replace(
               prim.wrapInEagerWrapper(selector, argumentNodes, vm));
 
-      VM.insertInstrumentationWrapper((Node) result);
-
       for (ExpressionNode exp : argumentNodes) {
         unwrapIfNecessary(exp).markAsPrimitiveArgument();
-        VM.insertInstrumentationWrapper(exp);
       }
 
+      notifyInserted((Node) result);
       return result;
     }
   }
 
-  @Instrumentable(factory = MessageSendNodeWrapper.class)
-  private static final class UninitializedMessageSendNode
+  @GenerateWrapper
+  protected static class UninitializedMessageSendNode
       extends AbstractUninitializedMessageSendNode {
 
     protected UninitializedMessageSendNode(final SSymbol selector,
@@ -248,17 +245,20 @@ public final class MessageSendNode {
     /**
      * For wrapper use only.
      */
-    protected UninitializedMessageSendNode(final UninitializedMessageSendNode wrappedNode) {
-      super(wrappedNode.selector, null, null);
+    protected UninitializedMessageSendNode() {
+      super(null, null, null);
+    }
+
+    @Override
+    public WrapperNode createWrapper(final ProbeNode probe) {
+      return new UninitializedMessageSendNodeWrapper(this, probe);
     }
 
     @Override
     protected GenericMessageSendNode makeSend() {
-      VM.insertInstrumentationWrapper(this);
       GenericMessageSendNode send = createGeneric(selector, argumentNodes, sourceSection);
       replace(send);
-      VM.insertInstrumentationWrapper(send);
-      VM.insertInstrumentationWrapper(argumentNodes[0]);
+      notifyInserted(send);
       return send;
     }
   }
@@ -278,9 +278,8 @@ public final class MessageSendNode {
     }
   }
 
-  @Instrumentable(factory = MessageSendNodeWrapper.class)
-  public static final class GenericMessageSendNode
-      extends AbstractMessageSendNode {
+  @GenerateWrapper
+  public static class GenericMessageSendNode extends AbstractMessageSendNode {
 
     private final SSymbol selector;
 
@@ -291,6 +290,16 @@ public final class MessageSendNode {
       super(arguments);
       this.selector = selector;
       this.dispatchNode = dispatchNode;
+    }
+
+    /** For wrappers. */
+    protected GenericMessageSendNode() {
+      this(null, null, null);
+    }
+
+    @Override
+    public WrapperNode createWrapper(final ProbeNode probe) {
+      return new GenericMessageSendNodeWrapper(this, probe);
     }
 
     @Override
@@ -308,9 +317,8 @@ public final class MessageSendNode {
     }
 
     @Override
-    public Object doPreEvaluated(final VirtualFrame frame,
-        final Object[] arguments) {
-      return dispatchNode.executeDispatch(arguments);
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+      return dispatchNode.executeDispatch(frame, arguments);
     }
 
     public AbstractDispatchNode getDispatchListHead() {

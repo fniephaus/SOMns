@@ -6,14 +6,13 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.instrumentation.InstrumentableFactory.WrapperNode;
+import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.nodes.DummyParent;
 import bd.primitives.Primitive;
-import som.VM;
 import som.instrumentation.InstrumentableDirectCallNode.InstrumentableBlockApplyNode;
 import som.interpreter.SArguments;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -40,8 +39,7 @@ public abstract class BlockPrims {
 
     if (VmSettings.DYNAMIC_METRICS) {
       callNode = new InstrumentableBlockApplyNode(callNode, sourceSection);
-      new DummyParent(callNode);
-      VM.insertInstrumentationWrapper(callNode);
+      new DummyParent(callNode).notifyInserted();
       assert callNode.getParent() instanceof WrapperNode;
       callNode = (DirectCallNode) callNode.getParent();
     }

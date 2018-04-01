@@ -7,7 +7,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
-import som.VM;
 import som.interpreter.actors.SuspendExecutionNodeGen;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.threading.TaskThreads.SomTaskOrThread;
@@ -31,7 +30,6 @@ public class ActivityJoin {
       super.initialize(source);
       if (VmSettings.TRUFFLE_DEBUGGER_ENABLED) {
         haltNode = insert(SuspendExecutionNodeGen.create(0, null).initialize(source));
-        VM.insertInstrumentationWrapper(haltNode);
       }
       return this;
     }

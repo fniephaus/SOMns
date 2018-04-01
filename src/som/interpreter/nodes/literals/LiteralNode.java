@@ -22,7 +22,8 @@
 package som.interpreter.nodes.literals;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.Instrumentable;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
@@ -35,13 +36,18 @@ import tools.debugger.Tags.LiteralTag;
 
 
 @NodeInfo(cost = NodeCost.NONE)
-@Instrumentable(factory = LiteralNodeWrapper.class)
+@GenerateWrapper
 public abstract class LiteralNode extends ExprWithTagsNode
     implements PreevaluatedExpression, Inlinable<MethodBuilder> {
 
   protected LiteralNode() {}
 
   protected LiteralNode(final LiteralNode wrapped) {}
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new LiteralNodeWrapper(this, probe);
+  }
 
   @Override
   public final Object doPreEvaluated(final VirtualFrame frame,

@@ -2,7 +2,11 @@ package som.instrumentation;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.instrumentation.Instrumentable;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.InstrumentableNode;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
+import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -10,8 +14,9 @@ import tools.dym.Tags.CachedClosureInvoke;
 import tools.dym.Tags.CachedVirtualInvoke;
 
 
-@Instrumentable(factory = DirectCallNodeWrapper.class)
-public class InstrumentableDirectCallNode extends DirectCallNode {
+@GenerateWrapper
+public class InstrumentableDirectCallNode extends DirectCallNode
+    implements InstrumentableNode {
 
   @Child protected DirectCallNode         callNode;
   @CompilationFinal private SourceSection sourceSection;
@@ -23,17 +28,28 @@ public class InstrumentableDirectCallNode extends DirectCallNode {
     this.sourceSection = source;
   }
 
-  protected InstrumentableDirectCallNode(final InstrumentableDirectCallNode wrapped) {
+  /** For wrapper. */
+  protected InstrumentableDirectCallNode() {
     super(null);
   }
 
+  public Object executeDummy(final VirtualFrame frame) {
+    return null;
+  }
+
   @Override
-  protected boolean isTaggedWith(final Class<?> tag) {
-    if (tag == CachedVirtualInvoke.class) {
-      return true;
-    } else {
-      return super.isTaggedWith(tag);
-    }
+  public boolean isInstrumentable() {
+    return true;
+  }
+
+  @Override
+  public boolean hasTag(final Class<? extends Tag> tag) {
+    return tag == CachedVirtualInvoke.class;
+  }
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new InstrumentableDirectCallNodeWrapper(this, probe);
   }
 
   @Override
@@ -81,21 +97,31 @@ public class InstrumentableDirectCallNode extends DirectCallNode {
     return callNode.getClonedCallTarget();
   }
 
-  @Instrumentable(factory = DirectCallNodeWrapper.class)
+  @GenerateWrapper
   public static class InstrumentableBlockApplyNode extends InstrumentableDirectCallNode {
     public InstrumentableBlockApplyNode(final DirectCallNode callNode,
         final SourceSection source) {
       super(callNode, source);
     }
 
+    /** For wrappers. */
+    protected InstrumentableBlockApplyNode() {
+      this(null, null);
+    }
+
     @Override
-    protected boolean isTaggedWith(final Class<?> tag) {
+    public WrapperNode createWrapper(final ProbeNode probe) {
+      return new InstrumentableBlockApplyNodeWrapper(this, probe);
+    }
+
+    @Override
+    public boolean hasTag(final Class<? extends Tag> tag) {
       if (tag == CachedClosureInvoke.class) {
         return true;
       } else if (tag == CachedVirtualInvoke.class) {
         return false; // don't want that type of instrumentation here
       } else {
-        return super.isTaggedWith(tag);
+        return super.hasTag(tag);
       }
     }
   }

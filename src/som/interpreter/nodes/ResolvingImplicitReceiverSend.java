@@ -5,19 +5,19 @@ import java.util.concurrent.locks.Lock;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.Instrumentable;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import som.VM;
 import som.compiler.MixinBuilder.MixinDefinitionId;
-import som.instrumentation.MessageSendNodeWrapper;
 import som.interpreter.LexicalScope.MethodScope;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.vmobjects.SSymbol;
 
 
-@Instrumentable(factory = MessageSendNodeWrapper.class)
-public final class ResolvingImplicitReceiverSend extends AbstractMessageSendNode {
+@GenerateWrapper
+public class ResolvingImplicitReceiverSend extends AbstractMessageSendNode {
 
   private final SSymbol           selector;
   private final MethodScope       currentScope;
@@ -53,12 +53,13 @@ public final class ResolvingImplicitReceiverSend extends AbstractMessageSendNode
   /**
    * For wrapped nodes only.
    */
-  protected ResolvingImplicitReceiverSend(final ResolvingImplicitReceiverSend wrappedNode) {
-    super(null);
-    this.selector = wrappedNode.selector;
-    this.currentScope = wrappedNode.currentScope;
-    this.mixinId = wrappedNode.mixinId;
-    this.vm = wrappedNode.vm;
+  protected ResolvingImplicitReceiverSend() {
+    this(null, null, null, null, null);
+  }
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new ResolvingImplicitReceiverSendWrapper(this, probe);
   }
 
   @Override

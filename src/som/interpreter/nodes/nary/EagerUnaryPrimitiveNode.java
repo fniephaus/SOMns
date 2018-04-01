@@ -2,10 +2,8 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.InstrumentableFactory.WrapperNode;
 import com.oracle.truffle.api.nodes.Node;
 
-import som.VM;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.MessageSendNode;
@@ -101,13 +99,10 @@ public final class EagerUnaryPrimitiveNode extends EagerPrimitiveNode {
   }
 
   private GenericMessageSendNode makeGenericSend() {
-    VM.insertInstrumentationWrapper(this);
-
     GenericMessageSendNode node = MessageSendNode.createGeneric(selector,
         new ExpressionNode[] {receiver}, getSourceSection());
     replace(node);
-    VM.insertInstrumentationWrapper(node);
-    VM.insertInstrumentationWrapper(receiver);
+    notifyInserted(node);
     return node;
   }
 

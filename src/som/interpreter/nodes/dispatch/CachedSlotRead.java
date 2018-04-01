@@ -1,6 +1,8 @@
 package som.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.profiles.IntValueProfile;
 
@@ -41,16 +43,16 @@ public abstract class CachedSlotRead extends AbstractDispatchNode {
   }
 
   @Override
-  public Object executeDispatch(final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
     try {
       if (guard.entryMatches(arguments[0])) {
         return read(guard.cast(arguments[0]));
       } else {
-        return nextInCache.executeDispatch(arguments);
+        return nextInCache.executeDispatch(frame, arguments);
       }
     } catch (InvalidAssumptionException e) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      return replace(nextInCache).executeDispatch(arguments);
+      return replace(nextInCache).executeDispatch(frame, arguments);
     }
   }
 
@@ -62,13 +64,13 @@ public abstract class CachedSlotRead extends AbstractDispatchNode {
   }
 
   @Override
-  protected boolean isTaggedWith(final Class<?> tag) {
+  public boolean hasTag(final Class<? extends Tag> tag) {
     if (tag == ClassRead.class) {
       return type == SlotAccess.CLASS_READ;
     } else if (tag == FieldRead.class) {
       return type == SlotAccess.FIELD_READ;
     } else {
-      return super.isTaggedWith(tag);
+      return false;
     }
   }
 
