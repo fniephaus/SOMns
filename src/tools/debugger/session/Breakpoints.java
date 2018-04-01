@@ -99,7 +99,9 @@ public class Breakpoints {
     if (bp == null) {
       bp = Breakpoint.newBuilder(bId.getCoordinate().uri).lineIs(bId.getCoordinate().startLine)
                      .columnIs(bId.getCoordinate().startColumn)
-                     .sectionLength(bId.getCoordinate().charLength).tag(tag)
+                     // .sectionLength(bId.getCoordinate().charLength) // TODO: is the
+                     // required?
+                     .tag(tag)
                      .suspendAnchor(anchor).build();
       debuggerSession.install(bp);
       truffleBreakpoints.put(bId, bp);
