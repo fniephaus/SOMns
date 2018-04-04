@@ -3,6 +3,7 @@ package som.primitives.actors;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Tag;
 
 import bd.primitives.Primitive;
 import som.interpreter.actors.Actor;
@@ -47,7 +48,7 @@ public abstract class CreateActorPrim extends BinarySystemOperation {
   }
 
   @Override
-  protected boolean isTaggedWithIgnoringEagerness(final Class<?> tag) {
+  protected boolean hasTagIgnoringEagerness(final Class<? extends Tag> tag) {
     if (tag == ExpressionBreakpoint.class) {
       return true;
     }

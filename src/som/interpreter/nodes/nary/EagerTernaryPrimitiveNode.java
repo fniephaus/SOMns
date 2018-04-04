@@ -2,6 +2,7 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 
 import som.interpreter.TruffleCompiler;
@@ -31,9 +32,9 @@ public final class EagerTernaryPrimitiveNode extends EagerPrimitiveNode {
   }
 
   @Override
-  protected boolean isTaggedWith(final Class<?> tag) {
+  public boolean hasTag(final Class<? extends Tag> tag) {
     assert !(primitive instanceof WrapperNode);
-    return primitive.isTaggedWithIgnoringEagerness(tag);
+    return primitive.hasTagIgnoringEagerness(tag);
   }
 
   @Override

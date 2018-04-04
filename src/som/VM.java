@@ -10,6 +10,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.debug.Debugger;
+import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.GraphPrintVisitor;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
@@ -45,7 +46,6 @@ import som.vmobjects.SObjectWithClass.SObjectWithoutFields;
 import som.vmobjects.SSymbol;
 import tools.concurrency.ActorExecutionTrace;
 import tools.concurrency.TracingActors;
-import tools.debugger.Tags;
 import tools.debugger.WebDebugger;
 import tools.debugger.session.Breakpoints;
 import tools.dym.DynamicMetrics;
@@ -171,7 +171,6 @@ public final class VM {
 
   private static final Object dynamicInstrumentationLock = new Object();
 
-
   private static void outputToIGV(final Method method) {
     GraphPrintVisitor graphPrinter = new GraphPrintVisitor();
 
@@ -210,7 +209,7 @@ public final class VM {
         && forkJoinPool.isQuiescent() && threadPool.isQuiescent();
   }
 
-  public void reportSyntaxElement(final Class<? extends Tags> type,
+  public void reportSyntaxElement(final Class<? extends Tag> type,
       final SourceSection source) {
     if (webDebugger != null) {
       webDebugger.reportSyntaxElement(type, source);

@@ -2,6 +2,7 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 
 import som.interpreter.TruffleCompiler;
@@ -27,11 +28,11 @@ public final class EagerBinaryPrimitiveNode extends EagerPrimitiveNode {
   }
 
   @Override
-  protected boolean isTaggedWith(final Class<?> tag) {
+  public boolean hasTag(final Class<? extends Tag> tag) {
     assert !(primitive instanceof WrapperNode) : "primitive can't be WrapperNodes to avoid double wrapping. It is: "
         + primitive.getClass().getSimpleName() + " and contains a "
         + ((WrapperNode) primitive).getDelegateNode().getClass().getSimpleName();
-    return primitive.isTaggedWithIgnoringEagerness(tag);
+    return primitive.hasTagIgnoringEagerness(tag);
   }
 
   @Override
