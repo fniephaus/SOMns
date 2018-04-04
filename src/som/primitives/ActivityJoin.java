@@ -12,6 +12,7 @@ import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.threading.TaskThreads.SomTaskOrThread;
 import som.vm.VmSettings;
 import tools.concurrency.ActorExecutionTrace;
+import tools.concurrency.Tags;
 import tools.concurrency.Tags.ExpressionBreakpoint;
 import tools.debugger.entities.ReceiveOp;
 
@@ -55,7 +56,7 @@ public class ActivityJoin {
 
     @Override
     protected boolean isTaggedWithIgnoringEagerness(final Class<?> tag) {
-      if (tag == ActivityJoin.class || tag == ExpressionBreakpoint.class) {
+      if (tag == Tags.ActivityJoin.class || tag == ExpressionBreakpoint.class) {
         return true;
       }
       return super.isTaggedWith(tag);
