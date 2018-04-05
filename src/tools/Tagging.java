@@ -27,6 +27,10 @@ public abstract class Tagging {
         @SuppressWarnings("unchecked")
         Set<Class<? extends Tag>> tags = t;
 
+        if (node.getSourceSection() == null) {
+          return true;
+        }
+
         if (tags.size() > 0) {
           if (sourceSectionsAndTags.containsKey(node.getSourceSection())) {
             sourceSectionsAndTags.get(node.getSourceSection()).addAll(tags);
