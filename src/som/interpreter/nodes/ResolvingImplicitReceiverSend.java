@@ -5,8 +5,6 @@ import java.util.concurrent.locks.Lock;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.GenerateWrapper;
-import com.oracle.truffle.api.instrumentation.ProbeNode;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import som.VM;
@@ -16,7 +14,6 @@ import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.vmobjects.SSymbol;
 
 
-@GenerateWrapper
 public class ResolvingImplicitReceiverSend extends AbstractMessageSendNode {
 
   private final SSymbol           selector;
@@ -55,11 +52,6 @@ public class ResolvingImplicitReceiverSend extends AbstractMessageSendNode {
    */
   protected ResolvingImplicitReceiverSend() {
     this(null, null, null, null, null);
-  }
-
-  @Override
-  public WrapperNode createWrapper(final ProbeNode probe) {
-    return new ResolvingImplicitReceiverSendWrapper(this, probe);
   }
 
   @Override

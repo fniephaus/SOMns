@@ -7,8 +7,6 @@ import java.util.concurrent.locks.Lock;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.GenerateWrapper;
-import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.instrumentation.StandardTags.CallTag;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -113,6 +111,11 @@ public final class MessageSendNode {
 
     protected AbstractMessageSendNode(final ExpressionNode[] arguments) {
       this.argumentNodes = arguments;
+    }
+
+    /** For wrappers only. */
+    protected AbstractMessageSendNode() {
+      this.argumentNodes = null;
     }
 
     @Override
@@ -234,7 +237,6 @@ public final class MessageSendNode {
     }
   }
 
-  @GenerateWrapper
   protected static class UninitializedMessageSendNode
       extends AbstractUninitializedMessageSendNode {
 
@@ -248,11 +250,6 @@ public final class MessageSendNode {
      */
     protected UninitializedMessageSendNode() {
       super(null, null, null);
-    }
-
-    @Override
-    public WrapperNode createWrapper(final ProbeNode probe) {
-      return new UninitializedMessageSendNodeWrapper(this, probe);
     }
 
     @Override
@@ -279,7 +276,6 @@ public final class MessageSendNode {
     }
   }
 
-  @GenerateWrapper
   public static class GenericMessageSendNode extends AbstractMessageSendNode {
 
     private final SSymbol selector;
@@ -296,11 +292,6 @@ public final class MessageSendNode {
     /** For wrappers. */
     protected GenericMessageSendNode() {
       this(null, null, null);
-    }
-
-    @Override
-    public WrapperNode createWrapper(final ProbeNode probe) {
-      return new GenericMessageSendNodeWrapper(this, probe);
     }
 
     @Override
