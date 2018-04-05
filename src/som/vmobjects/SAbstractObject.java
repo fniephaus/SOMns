@@ -1,13 +1,21 @@
 package som.vmobjects;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.interop.ForeignAccess;
+import com.oracle.truffle.api.interop.TruffleObject;
+
+import som.vm.NotYetImplementedException;
 
 
-public abstract class SAbstractObject {
+public abstract class SAbstractObject implements TruffleObject {
 
   public abstract SClass getSOMClass();
 
   public abstract boolean isValue();
+
+  public ForeignAccess getForeignAccess() {
+    throw new NotYetImplementedException();
+  }
 
   @Override
   public String toString() {
