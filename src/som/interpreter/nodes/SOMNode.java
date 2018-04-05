@@ -28,6 +28,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
+import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -122,11 +123,11 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
   }
 
   @Override
-  protected boolean isTaggedWith(final Class<?> tag) {
-    if (tag == Tags.AnyNode.class) {
-      return true;
-    } else {
-      return super.isTaggedWith(tag);
-    }
+  protected final boolean isTaggedWith(final Class<?> tag) {
+    return false;
+  }
+
+  public boolean hasTag(final Class<? extends Tag> tag) {
+    return tag == Tags.AnyNode.class;
   }
 }
