@@ -316,7 +316,8 @@ public class SPromise extends SObjectWithClass {
       // lead to a stack overflow.
       // TODO: restore 10000 as parameter in testAsyncDeeplyChainedResolution
       if (promise.chainedPromise != null) {
-        Object wrapped = promise.chainedPromise.owner.wrapForUse(result, current, null);
+        Object wrapped =
+            WrapReferenceNode.wrapForUse(promise.chainedPromise.owner, result, current, null);
         resolveAndTriggerListenersUnsynced(type, result, wrapped,
             promise.chainedPromise, current, actorPool,
             promise.chainedPromise.haltOnResolution, whenResolvedProfile);
@@ -336,7 +337,7 @@ public class SPromise extends SObjectWithClass {
       if (promise.chainedPromiseExt != null) {
 
         for (SPromise p : promise.chainedPromiseExt) {
-          Object wrapped = p.owner.wrapForUse(result, current, null);
+          Object wrapped = WrapReferenceNode.wrapForUse(p.owner, result, current, null);
           resolveAndTriggerListenersUnsynced(type, result, wrapped, p, current,
               actorPool, haltOnResolution, whenResolvedProfile);
         }
